@@ -9,11 +9,11 @@ export default class GameScene extends Phaser.Scene {
     super('GameScene'); 
   }
 
-  init (data) {
+  init(data) {
     this.selectedMapKey = data.mapKey || 'IndustrialMap';
   }
 
-  create () {
+  create() {
     console.log('[GameScene] Tem animação?', this.anims.exists('player-punk-fists-idle'));
 
     this.physics.world.gravity.y = gameData.globalConfig.gravityY;
@@ -26,34 +26,28 @@ export default class GameScene extends Phaser.Scene {
       this.tilemap.addTilesetImage(ts.name, ts.key)
     );
 
-    this.add
-      .tileSprite(
-        0, 0,
-        this.tilemap.widthInPixels,
-        this.tilemap.heightInPixels,
-        `${mapConfig.key}_1`
-      )
-      .setOrigin(0, 0)
-      .setScrollFactor(0);
+    this.add.tileSprite(
+      0, 0,
+      this.tilemap.widthInPixels,
+      this.tilemap.heightInPixels,
+      `${mapConfig.key}_1`
+    ).setOrigin(0, 0).setScrollFactor(0);
 
-    this.bg2 = this.add
-      .tileSprite(0, 0, this.scale.width, 648, `${mapConfig.key}_2.1`)
-      .setOrigin(0, 0)
-      .setScrollFactor(0);
+    this.bg2 = this.add.tileSprite(
+      0, 0, this.scale.width, 648, `${mapConfig.key}_2.1`
+    ).setOrigin(0, 0).setScrollFactor(0);
 
     ['3.1', '4.1', '5.1'].forEach((name, i) => {
-      this.add
-        .image(
-          this.tilemap.widthInPixels / 2,
-          150 + i * 50,
-          `${mapConfig.key}_${name}`
-        )
-        .setOrigin(0.5, 0)
-        .setScrollFactor(0);
+      this.add.image(
+        this.tilemap.widthInPixels / 2,
+        150 + i * 50,
+        `${mapConfig.key}_${name}`
+      ).setOrigin(0.5, 0).setScrollFactor(0);
     });
 
     this.tilemap.createLayer(mapConfig.layers.wall,    tilesets, 0, 0);
     this.tilemap.createLayer(mapConfig.layers.objects, tilesets, 0, 0);
+
     this.groundLayer = this.tilemap.createLayer(
       mapConfig.layers.ground,
       tilesets,
@@ -61,10 +55,10 @@ export default class GameScene extends Phaser.Scene {
       0
     );
 
-    const tileset      = this.tilemap.tilesets[0];
-    const oneWayLocal  = [71, 17];
+    const tileset = this.tilemap.tilesets[0];
+    const oneWayLocal = [71, 17];
     const oneWayGlobal = oneWayLocal.map(id => tileset.firstgid + id);
-    this.oneWayTileIndexes = oneWayGlobal; 
+    this.oneWayTileIndexes = oneWayGlobal;
 
     this.groundLayer.setCollisionByExclusion([-1]);
     this.groundLayer.forEachTile(tile => {
@@ -74,8 +68,7 @@ export default class GameScene extends Phaser.Scene {
     });
 
     this.physics.world.setBounds(
-      0,
-      0,
+      0, 0,
       this.tilemap.widthInPixels,
       this.tilemap.heightInPixels
     );
@@ -83,20 +76,20 @@ export default class GameScene extends Phaser.Scene {
     const { spawn_1: s1, spawn_2: s2 } = mapConfig.spawnOffset;
 
     this.player1 = new Player(this, s1.x, s1.y, {
-      slot:         'player1',
-      character:    'punk',
-      controls:     gameData.playerControls.player1,
-      tilemap:      this.tilemap,
-      groundLayer:  this.groundLayer,
+      slot:        'player1',
+      character:   'punk',
+      controls:    gameData.playerControls.player1,
+      tilemap:     this.tilemap,
+      groundLayer: this.groundLayer,
       flipX: false
     });
 
     this.player2 = new Player(this, s2.x, s2.y, {
-      slot:         'player2',
-      character:    'cyborg',
-      controls:     gameData.playerControls.player2,
-      tilemap:      this.tilemap,
-      groundLayer:  this.groundLayer,
+      slot:        'player2',
+      character:   'cyborg',
+      controls:    gameData.playerControls.player2,
+      tilemap:     this.tilemap,
+      groundLayer: this.groundLayer,
       flipX: true
     });
 
@@ -105,26 +98,12 @@ export default class GameScene extends Phaser.Scene {
 
     const cam = this.cameras.main;
     cam.setBounds(
-      0,
-      0,
+      0, 0,
       this.tilemap.widthInPixels,
       this.tilemap.heightInPixels
     );
 
-    this.events.on('update', () => {
-      const midY   = (this.player1.sprite.y + this.player2.sprite.y) / 2;
-      const halfH  = cam.height / 2;
-      const maxY   = cam._bounds.bottom;
-      cam.centerOn(640, Phaser.Math.Clamp(midY, halfH, maxY - halfH));
-
-      this.bg2.tilePositionX += 0.1;
-    });
-
-    this.weaponSpawner = new SpawnWeapon(
-      this,
-      this.tilemap,
-      this.groundLayer
-    );
+    this.weaponSpawner = new SpawnWeapon(this, this.tilemap, this.groundLayer);
 
     const tileX = 6;
     const tileY = 1;
@@ -140,15 +119,32 @@ export default class GameScene extends Phaser.Scene {
 
     this.players = [this.player1, this.player2];
 
-    if (!this.sound.get('gameMusic')) {
-      const music = this.sound.add('gameMusic', { volume: 0.5, loop: true });
+    // Garantir que a música toca sempre ao entrar na cena
+    let music = this.sound.get('gameMusic');
+    if (!music) {
+      music = this.sound.add('gameMusic', { volume: 0.5, loop: true });
+    }
+    if (!music.isPlaying) {
       music.play();
     }
   }
 
-  update () {
+  update() {
     this.player1.update();
     this.player2.update();
+
+    const cam   = this.cameras.main;
+    const midX  = (this.player1.sprite.x + this.player2.sprite.x) / 2;
+    const midY  = (this.player1.sprite.y + this.player2.sprite.y) / 2;
+    const halfW = cam.width / 2;
+    const halfH = cam.height / 2;
+
+    cam.centerOn(
+      Phaser.Math.Clamp(midX, halfW, this.tilemap.widthInPixels - halfW),
+      Phaser.Math.Clamp(midY, halfH, this.tilemap.heightInPixels - halfH)
+    );
+
+    this.bg2.tilePositionX += 0.1;
   }
 
   registerMeleeCollision(hitArea, attacker, damage) {

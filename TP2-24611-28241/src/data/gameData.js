@@ -6,17 +6,17 @@ const gameData = {
       up: 'W',
       down: 'S',
       jump: 'SPACE',
-      attack: 'J',
-      pick: 'F'
+      attack: 'F',
+      pick: 'Q'
     },
     player2: {
       left: 'LEFT',
       right: 'RIGHT',
       up: 'UP',
       down: 'DOWN',
-      jump: 'NUMPAD_TWO',
-      attack: 'NUMPAD_ZERO',
-      pick: 'NUMPAD_ONE'
+      jump: 'NUMPAD_EIGHT',
+      attack: 'NUMPAD_NINE',
+      pick: 'NUMPAD_SEVEN'
     }
   },
 
